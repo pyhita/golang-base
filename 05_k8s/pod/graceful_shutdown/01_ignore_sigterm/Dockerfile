@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM golang:1.20 as builder
+FROM m.daocloud.io/docker.io/golang:1.20 as builder
 WORKDIR /app
 # Enable static compilation
 ENV CGO_ENABLED=0 GOOS=linux

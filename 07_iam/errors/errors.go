@@ -34,7 +34,7 @@ func WrapC(code int, err error, format string, args ...any) error {
 }
 
 func (w *withCode) Error() string {
-	return fmt.Sprintf("%v", w)
+	return fmt.Sprintf("%v", w.err)
 }
 
 func (w *withCode) Cause() error {

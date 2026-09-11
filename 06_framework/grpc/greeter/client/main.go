@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	helloworld2 "github.com/pyhita/golang-base/06_gRPC/grpc/greeter/helloworld"
+	helloworld2 "github.com/pyhita/golang-base/06_framework/grpc/greeter/helloworld"
 	"google.golang.org/grpc"
 	"log"
 	"os"

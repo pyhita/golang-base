@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 2,
+  "manifests": [
+    {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:ae0a6d6801ba51e6780e2788f8c04594e17e20c30b84bcaddb9c595c98a24418",
+      "size": 528,
+      "annotations": {
+        "org.opencontainers.image.ref.name": "hello:scratch"
+      }
+    }
+  ]
+}

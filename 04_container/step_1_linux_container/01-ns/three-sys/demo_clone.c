@@ -1,5 +1,9 @@
 // 接受一个参数，clone 出一个新进程，隔离uts namespace
 // 同时更改hostname
+// ./demo_clone node01
+// uts.nodename in child:  node01
+// PID of child created by clone() is 866633
+// uts.nodename in parent: k8s01
 #define _GNU_SOURCE
 #include <sys/wait.h>
 #include <sys/utsname.h>

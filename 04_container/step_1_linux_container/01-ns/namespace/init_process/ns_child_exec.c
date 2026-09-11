@@ -94,3 +94,4 @@ main(int argc, char *argv[])
     if (verbose)
         printf("%s: terminating\n", argv[0]);
     exit(EXIT_SUCCESS);
+}

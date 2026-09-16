@@ -6,6 +6,10 @@
    Create a child process that executes a shell command in new
    namespace(s); allow UID and GID mappings to be specified when
    creating a user namespace.
+
+   *** Modified: added proc_setgroups_write() to write "deny" to
+   *** /proc/PID/setgroups before writing gid_map, as required since
+   *** Linux 3.19 to avoid EPERM when writing the GID map.
 */
 #define _GNU_SOURCE
 #include <sched.h>
@@ -97,6 +101,44 @@ update_map(char *mapping, char *map_file)
         fprintf(stderr, "write %s: %s\n", map_file, strerror(errno));
         exit(EXIT_FAILURE);
     }
+
+    close(fd);
+}
+
+/* Linux 3.19 made a change in the handling of setgroups(2) and the
+   'gid_map' file to address a security issue. The issue allowed
+   unprivileged users to employ user namespaces in order to drop
+   the ability to call setgroups(2), while still retaining the
+   power to make use of capabilities. The upshot of the 3.19
+   changes is that in order to update the 'gid_map' file, use of
+   the setgroups() system call in this user namespace must first
+   be disabled by writing "deny" to one of the /proc/PID/setgroups
+   files for this namespace. That is the purpose of the following
+   function. */
+
+static void
+proc_setgroups_write(pid_t child_pid, const char *str)
+{
+    char setgroups_path[PATH_MAX];
+    int fd;
+
+    snprintf(setgroups_path, PATH_MAX, "/proc/%ld/setgroups",
+            (long) child_pid);
+
+    fd = open(setgroups_path, O_RDWR);
+    if (fd == -1) {
+
+        /* We may be on a system that doesn't support
+           /proc/PID/setgroups. In that case, the file won't exist,
+           and there is nothing to do, so we just return. */
+
+        if (errno != ENOENT)
+            errExit("open setgroups");
+        return;
+    }
+
+    if (write(fd, str, strlen(str)) == -1)
+        errExit("write setgroups");
 
     close(fd);
 }
@@ -205,7 +247,18 @@ main(int argc, char *argv[])
                 (long) child_pid);
         update_map(uid_map, map_path);
     }
+
     if (gid_map != NULL) {
+
+        /* Since Linux 3.19, use of the setgroups() system call in a
+           user namespace can be disabled by writing "deny" to a
+           /proc/PID/setgroups file, and this must be done before
+           writing to /proc/PID/gid_map if the writing process does
+           not have the CAP_SETGID capability in the parent user
+           namespace covering the range of GIDs being mapped. */
+
+        proc_setgroups_write(child_pid, "deny");
+
         snprintf(map_path, PATH_MAX, "/proc/%ld/gid_map",
                 (long) child_pid);
         update_map(gid_map, map_path);

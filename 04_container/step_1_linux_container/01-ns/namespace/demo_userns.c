@@ -18,6 +18,8 @@
 //     1000
 //     $ ./demo_userns
 //     eUID = 65534;  eGID = 65534;  capabilities: =ep
+// apt-get update && apt-get install -y libcap-dev
+// gcc -o demo_userns demo_userns.c -lcap
 #define _GNU_SOURCE
 #include <sys/capability.h>
 #include <sys/wait.h>

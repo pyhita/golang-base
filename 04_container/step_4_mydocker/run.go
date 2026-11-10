@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/pyhita/mydocker/container"
 	log "github.com/sirupsen/logrus"
@@ -13,11 +14,24 @@ import (
 进程，然后在子进程中，调用/proc/self/exe,也就是调用自己，发送init参数，调用我们写的init方法，
 去初始化容器的一些资源。
 */
-func Run(tty bool, cmd string) {
-	parent := container.NewParentProcess(tty, cmd)
+func Run(tty bool, cmdArray []string) {
+	parent, writePipe := container.NewParentProcess(tty)
+	if parent == nil {
+		log.Errorf("New parent process error")
+		return
+	}
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
+	// 子进程创建之后，通过pipe 发送参数
+	sendInitCommand(cmdArray, writePipe)
 	_ = parent.Wait()
 	os.Exit(-1)
+}
+
+func sendInitCommand(cmdArray []string, writePipe *os.File) {
+	command := strings.Join(cmdArray, " ")
+	log.Infof("command all is %s", command)
+	_, _ = writePipe.WriteString(command)
+	_ = writePipe.Close()
 }

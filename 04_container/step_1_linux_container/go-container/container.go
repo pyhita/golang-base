@@ -57,14 +57,14 @@ func child() {
 }
 
 func cgV2() {
-	cgroups := "/sys/fs/cgroup"
+	cgroups := "/sys/fs/cgroups"
 	kante := filepath.Join(cgroups, "kante")
 
-	// 创建新的 cgroup 目录
+	// 创建新的 cgroups 目录
 	must(os.MkdirAll(kante, 0755))
 
 	// 启用 pids 控制器（只需在父目录设置一次）
-	must(os.WriteFile(filepath.Join(cgroups, "cgroup.subtree_control"), []byte("+pids"), 0700))
+	must(os.WriteFile(filepath.Join(cgroups, "cgroups.subtree_control"), []byte("+pids"), 0700))
 
 	// 设置最大进程数
 	must(os.WriteFile(filepath.Join(kante, "pids.max"), []byte("20"), 0700))
@@ -72,8 +72,8 @@ func cgV2() {
 	// 设置自动释放（可选，v2 中 notify_on_release 已废弃，但仍可写入）
 	_ = os.WriteFile(filepath.Join(kante, "notify_on_release"), []byte("1"), 0700)
 
-	// 将当前进程加入该 cgroup
-	must(os.WriteFile(filepath.Join(kante, "cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
+	// 将当前进程加入该 cgroups
+	must(os.WriteFile(filepath.Join(kante, "cgroups.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
 }
 
 func must(err error) {
@@ -81,4 +81,3 @@ func must(err error) {
 		panic(err)
 	}
 }
-
